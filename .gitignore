@@ -1,0 +1,20 @@
+# Build output
+/bin/
+/build/
+/out/
+
+# IDE settings
+*.iml
+.idea/
+*.class
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+.DS_Store
+
+# OS-generated files
+Thumbs.db
