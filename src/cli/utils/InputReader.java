@@ -1,16 +1,44 @@
 package cli.utils;
 
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+
+import java.io.IOException;
 import java.util.Scanner;
 
 import cli.ui.ConsolePrinter;
+import feature.WordCompleter;
+import feature.WordCompletionAdapter;
 
 public class InputReader {
     private static final Scanner scanner = new Scanner(System.in);
 
-    public static String readString(String prompt) {
+    private static LineReader reader = null;
 
+    public static void initAutoComplete(WordCompleter completer) {
+        try {
+            Terminal terminal = TerminalBuilder.builder().system(true).build();
+            //completer.printAllWords();
+            WordCompletionAdapter adapter = new WordCompletionAdapter(completer);
+            reader = LineReaderBuilder.builder()
+                    .terminal(terminal)
+                    .completer(adapter)
+                    .build();
+        } catch (IOException e) {
+            ConsolePrinter.printError("Error initializing autocomplete. Falling back to basic input.");
+            reader = null;
+        }
+    }
+
+    public static String readString(String prompt) {
         ConsolePrinter.printQuestion(prompt + ": ");
-        return scanner.nextLine();
+        if (reader != null) {
+            return reader.readLine();
+        } else {
+            return scanner.nextLine();
+        }
     }
 
     public static int readInt(String prompt) {

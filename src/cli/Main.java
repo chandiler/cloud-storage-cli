@@ -1,6 +1,7 @@
 package cli;
 
 import java.util.List;
+import java.util.Set;
 
 import cli.screens.FeatureInputScreen;
 import cli.screens.FilterInputScreen;
@@ -8,37 +9,46 @@ import cli.screens.MatchedPlansScreen;
 import cli.screens.PlatformSelectionScreen;
 import cli.screens.RecommendationScreen;
 import cli.ui.ConsolePrinter;
+import cli.utils.InputReader;
+import feature.FeatureExtractor;
 import feature.HtmlParser;
 import feature.Recommender;
 import feature.WebCrawler;
+import feature.WordCompleter;
 import model.Plan;
 import model.UserRequest;
 
 public class Main {
-    public static void main(String[] args) {
-    	// Getting Platform 
-		String platform =  PlatformSelectionScreen.show();
-		
+	public static void main(String[] args) {
+		WordCompleter completer = new WordCompleter();
+		completer.insertWords(
+				Set.of("admin", "dropbox", "drive", "onedrive", "icloud", "storage", "encryption", "version history"));
+
+		InputReader.initAutoComplete(completer);
+
+		// Getting Platform
+		String platform = PlatformSelectionScreen.show();
+
 		// Crawling
 		ConsolePrinter.printInfo("Crawling data from " + platform + " ...");
-        String rawHtml = new WebCrawler().crawl(platform);
-        List<Plan> plans = new HtmlParser().parse(rawHtml);
-        ConsolePrinter.printSuccess("Data loaded.\n");
-		
-        // Asking for features
-        List<String> selectedFeatures = new FeatureInputScreen().showAndGetResult();
-		
+		String rawHtml = new WebCrawler().crawl(platform);
+		List<Plan> plans = new HtmlParser().parse(rawHtml);
+		ConsolePrinter.printSuccess("Data loaded.\n");
+
+		// Asking for features
+		List<String> selectedFeatures = new FeatureInputScreen().showAndGetResult();
+
 		// User Filters
-        UserRequest request = new FilterInputScreen().showAndGetResult();
+		UserRequest request = new FilterInputScreen().showAndGetResult();
 		request.setFeatureKeywords(selectedFeatures);
-		
+
 		List<Plan> filteredPlans = new Recommender().recommend(plans, request);
-		
+
 		List<Plan> ranked = new MatchedPlansScreen().showAndGetResult(filteredPlans);
 		if (ranked.isEmpty()) {
-		    return;
+			return;
 		}
-		
+
 		RecommendationScreen.show(ranked.get(0));
-    }
+	}
 }
