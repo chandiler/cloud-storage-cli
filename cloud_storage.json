@@ -1,0 +1,236 @@
+[
+  {
+    "Platform": "Google Drive",
+    "PaymentFrequency": [
+      "Monthly",
+      "Annual"
+    ],
+    "AvailableStorageOptions": [
+      "15GB",
+      "100GB",
+      "2TB"
+    ],
+    "UpgradePaths": "Supports upgrade/downgrade at any time, prorated daily",
+    "FileTypesSupported": [
+      "Documents",
+      "Photos",
+      "Videos",
+      "Large Files"
+    ],
+    "Notes": "Supports upload of single files up to 5TB (non-Google formats)",
+    "PlatformCompatibility": {
+      "Integrations": [
+        "Google Photos",
+        "Gmail",
+        "Google Workspace"
+      ]
+    },
+    "Plans": [
+      {
+        "PlanName": "Basic(15G)",
+        "Storage": "15GB",
+        "Features": [
+          "15 GB of storage"
+        ],
+        "PricingOptions": [
+          {
+            "PlanType": "Monthly",
+            "Price": "FREE"
+          },
+          {
+            "PlanType": "Annual",
+            "Price": "FREE"
+          }
+        ]
+      },
+      {
+        "PlanName": "Basic (100 GB)",
+        "Storage": "100GB",
+        "Features": [
+          "100 GB of storage for Photos, Drive \u0026 Gmail"
+        ],
+        "PricingOptions": [
+          {
+            "PlanType": "Monthly",
+            "Price": "CA$2.79/mo"
+          },
+          {
+            "PlanType": "Annual",
+            "Price": "CA$27.99/yr"
+          }
+        ]
+      },
+      {
+        "PlanName": "Premium (2 TB)",
+        "Storage": "2TB",
+        "Features": [
+          "2 TB of storage for Photos, Drive \u0026 Gmail",
+          "10% back in the Google Store",
+          "Google Workspace premium features"
+        ],
+        "PricingOptions": [
+          {
+            "PlanType": "Monthly",
+            "Price": "CA$13.99/mo"
+          },
+          {
+            "PlanType": "Annual",
+            "Price": "CA$139.99/yr"
+          }
+        ]
+      },
+      {
+        "PlanName": "Google AI Pro (2 TB)",
+        "Storage": "2TB",
+        "Features": [
+          "2 TB of storage for Photos, Drive \u0026 Gmail",
+          "Gemini app with 2.5 Pro \u0026 limited access to Veo 3",
+          "Flow with limited access to Veo 3",
+          "Whisk with Veo 2",
+          "1,000 monthly AI credits",
+          "NotebookLM with higher limits",
+          "Gemini in Gmail, Docs, Vids \u0026 more",
+          "All other benefits in the Premium plan"
+        ],
+        "PricingOptions": [
+          {
+            "PlanType": "Monthly",
+            "Price": "CA$26.99/mo"
+          },
+          {
+            "PlanType": "Annual",
+            "Price": "Available with monthly billing"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Platform": "Dropbox",
+    "PaymentFrequency": [
+      "Monthly",
+      "Annual"
+    ],
+    "AvailableStorageOptions": [
+      "N/A"
+    ],
+    "UpgradePaths": "Supports upgrade; some plans do not support downgrade",
+    "FileTypesSupported": [
+      "Documents",
+      "Photos",
+      "Videos"
+    ],
+    "Notes": "Free plan: web upload limit is 2GB per file",
+    "PlatformCompatibility": {
+      "Integrations": []
+    },
+    "Plans": [
+      {
+        "PlanName": "Plus",
+        "Features": [
+          "1 user",
+          "2 TB of storage",
+          "Stay connected across all devices",
+          "30 days to restore deleted files",
+          "Transfer files up to 50GB",
+          "Edit PDFs and get signatures"
+        ],
+        "Storage": "N/A",
+        "PricingOptions": [
+          {
+            "PlanType": "Monthly",
+            "Price": "CA$12.99 / month"
+          },
+          {
+            "PlanType": "Annual",
+            "Price": "CA$12.99 / month"
+          }
+        ]
+      },
+      {
+        "PlanName": "Professional",
+        "Features": [
+          "1 user",
+          "3 TB of storage",
+          "Stay connected across all devices",
+          "180 days to restore deleted files",
+          "Transfer files up to 100GB",
+          "Edit PDFs and get signatures",
+          "Brand your files to share",
+          "Password protect files"
+        ],
+        "Storage": "N/A",
+        "PricingOptions": [
+          {
+            "PlanType": "Monthly",
+            "Price": "CA$23.25 / month"
+          },
+          {
+            "PlanType": "Annual",
+            "Price": "CA$23.25 / month"
+          }
+        ]
+      },
+      {
+        "PlanName": "Standard",
+        "Features": [
+          "3+ users",
+          "5 TB of storage for the team",
+          "Stay connected across all devices",
+          "180 days  to restore deleted files",
+          "Transfer files up to 100 GB",
+          "Edit PDFs and get signatures",
+          "Brand your files to share",
+          "Password protect files",
+          "Get team folders for organization",
+          "Manage team sharing",
+          "Create groups and roles",
+          "Admin control"
+        ],
+        "Storage": "N/A",
+        "PricingOptions": [
+          {
+            "PlanType": "Monthly",
+            "Price": "CA$21 / user / month"
+          },
+          {
+            "PlanType": "Annual",
+            "Price": "CA$21 / user / month"
+          }
+        ]
+      },
+      {
+        "PlanName": "Advanced",
+        "Features": [
+          "3+ users",
+          "Starts at 15 TB for the team",
+          "Stay connected across all devices",
+          "1 year to restore deleted files",
+          "Transfer files up to 100 GB",
+          "Edit PDFs and get signatures",
+          "Brand your files to share",
+          "Password protect files",
+          "Get team folders for organization",
+          "Manage team sharing",
+          "Create groups and roles",
+          "Tiered-admin management",
+          "End-to-end encryption",
+          "Advanced key management",
+          "Compliance tracking",
+          "Single sign-on"
+        ],
+        "Storage": "N/A",
+        "PricingOptions": [
+          {
+            "PlanType": "Monthly",
+            "Price": "CA$33 / user / month"
+          },
+          {
+            "PlanType": "Annual",
+            "Price": "CA$33 / user / month"
+          }
+        ]
+      }
+    ]
+  }
+]
