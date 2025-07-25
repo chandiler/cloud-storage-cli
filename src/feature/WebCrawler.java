@@ -32,6 +32,7 @@ public class WebCrawler {
 		String selected = scanner.nextLine().trim().toLowerCase();
 		System.out.println("You selected: " + selected);
 		scanner.close();
+		// call cli.screen. menuscreen()
 
 		// 启动 Chrome 浏览器无痕模式
 		// Launch Chrome in incognito mode
@@ -52,8 +53,12 @@ public class WebCrawler {
 			// System.out.println(2111111);
 			allPlatforms.add(crawlDropbox(driver));
 		}
-		// if (selected.equals("box") || selected.equals("all")) { ... }
-		// if (selected.equals("onedrive") || selected.equals("all")) { ... }
+		if (selected.equals("onedrive") || selected.equals("all")) {
+			allPlatforms.add(crawlOneDrive(driver));
+		}
+		if (selected.equals("box") || selected.equals("all")) {
+			allPlatforms.add(crawlBox(driver));
+		}
 
 		// 输出 JSON 文件
 		// Write output to JSON
@@ -75,102 +80,15 @@ public class WebCrawler {
 		sleep(1500);
 		PlanExtractor extractor = new GooglePlanExtractor();
 		List<Map<String, Object>> plans = new ArrayList<>();
-		plans = extractPlans(driver, "Monthly", plans, extractor);
+		plans = extractPlans(driver, "Monthly", plans, extractor, "div.staJ7e, div[data-testid='plan-card']");
 		switchToGoogleAnnual(driver);
-		plans = extractPlans(driver, "Annual", plans, extractor);
+		plans = extractPlans(driver, "Annual", plans, extractor, "div.staJ7e, div[data-testid='plan-card']");
 
 		return buildPlatformObject("Google Drive", plans, Arrays.asList("Monthly", "Annual"),
 				Arrays.asList("Documents", "Photos", "Videos", "Large Files"),
 				"Supports upload of single files up to 5TB (non-Google formats)",
 				Arrays.asList("Google Photos", "Gmail", "Google Workspace"),
 				"Supports upgrade/downgrade at any time, prorated daily");
-	}
-
-	// Dropbox 爬虫流程
-	// Dropbox crawling logic
-	private static Map<String, Object> crawlDropbox(WebDriver driver) {
-		driver.get("https://www.dropbox.com/plans?billing=monthly");
-		sleep(1500);
-
-		try {
-			for (int i = 0; i < 3; i++) {
-				((JavascriptExecutor) driver).executeScript("window.scrollBy(0, 500);");
-				Thread.sleep(1000);
-			}
-		} catch (Exception ignored) {
-		}
-
-		PlanExtractor extractor = new DropboxPlanExtractor();
-		Map<String, Map<String, Object>> planMap = new LinkedHashMap<>();
-
-		// 月付
-		List<WebElement> monthlyBlocks = driver.findElements(By.cssSelector("div._dwg-plan-card-v2__section_nnw6p_6"));
-		for (WebElement block : monthlyBlocks) {
-			String title = extractor.extractTitle(block);
-			String price = extractor.extractPrice(block, "Monthly");
-			List<String> features = extractor.extractFeatures(block);
-
-			Map<String, Object> plan = planMap.getOrDefault(title, new LinkedHashMap<>());
-			plan.put("PlanName", title);
-			plan.put("Features", features);
-			plan.put("Storage", extractStorageFromFeatures(features));
-			// System.out.print(plan);
-			List<Map<String, String>> pricing = (List<Map<String, String>>) plan.getOrDefault("PricingOptions",
-					new ArrayList<>());
-			pricing.add(Map.of("PlanType", "Monthly", "Price", price));
-			plan.put("PricingOptions", pricing);
-
-			planMap.put(title, plan);
-		}
-
-		// 切换年付
-		switchToDropboxAnnual(driver);
-		sleep(1500);
-
-		try {
-			for (int i = 0; i < 3; i++) {
-				((JavascriptExecutor) driver).executeScript("window.scrollBy(0, 500);");
-				Thread.sleep(1000);
-			}
-		} catch (Exception ignored) {
-		}
-
-		// 年付
-		List<WebElement> annualBlocks = driver.findElements(By.cssSelector("div._dwg-plan-card-v2__section_nnw6p_6"));
-		for (WebElement block : annualBlocks) {
-			String title = extractor.extractTitle(block);
-			String price = extractor.extractPrice(block, "Annual");
-			List<String> features = extractor.extractFeatures(block);
-
-			Map<String, Object> plan = planMap.getOrDefault(title, new LinkedHashMap<>());
-			plan.put("PlanName", title);
-			plan.put("Features", features);
-			plan.put("Storage", extractStorageFromFeatures(features));
-
-			List<Map<String, String>> pricing = (List<Map<String, String>>) plan.getOrDefault("PricingOptions",
-					new ArrayList<>());
-			pricing.add(Map.of("PlanType", "Annual", "Price", price));
-			plan.put("PricingOptions", pricing);
-
-			planMap.put(title, plan);
-		}
-
-		// 最终结构输出
-		List<Map<String, Object>> plans = new ArrayList<>(planMap.values());
-
-		return buildPlatformObject("Dropbox", plans, Arrays.asList("Monthly", "Annual"),
-				Arrays.asList("Documents", "Photos", "Videos"), "Free plan: web upload limit is 2GB per file",
-				new ArrayList<>(), // Integrations
-				"Supports upgrade; some plans do not support downgrade");
-	}
-
-	private static String extractStorageFromFeatures(List<String> features) {
-		for (String f : features) {
-			String match = f.replaceAll("(?i).*?(\\d+(\\.\\d+)?\\s*(GB|TB)).*", "$1").toUpperCase();
-			if (!match.equalsIgnoreCase(f))
-				return match;
-		}
-		return "N/A";
 	}
 
 	// 切换 Google 年付按钮
@@ -183,6 +101,52 @@ public class WebCrawler {
 		} catch (Exception e) {
 			System.out.println("Google toggle failed: " + e.getMessage());
 		}
+	}
+
+	// Dropbox 爬虫流程（重构版，复用 extractPlans）
+	// Dropbox crawling logic (refactored with extractPlans)
+	private static Map<String, Object> crawlDropbox(WebDriver driver) {
+		driver.get("https://www.dropbox.com/plans?billing=monthly");
+		sleep(1500);
+
+		// 页面下拉以加载完整内容
+		// Scroll to ensure content loads
+		try {
+			for (int i = 0; i < 3; i++) {
+				((JavascriptExecutor) driver).executeScript("window.scrollBy(0, 800);");
+				Thread.sleep(1000);
+			}
+		} catch (Exception ignored) {
+		}
+
+		PlanExtractor extractor = new DropboxPlanExtractor();
+		List<Map<String, Object>> plans = new ArrayList<>();
+
+		// 提取月付计划 / Extract monthly plans
+		// plans = extractPlans(driver, "Monthly", plans, extractor);
+		plans = extractPlans(driver, "Monthly", plans, extractor, "div._dwg-plan-card-v2__section_nnw6p_6");
+
+		// 切换到年付 / Switch to annual plans
+		switchToDropboxAnnual(driver);
+		sleep(1500);
+
+		// 再次下拉加载页面内容 / Scroll again for annual section
+		try {
+			for (int i = 0; i < 3; i++) {
+				((JavascriptExecutor) driver).executeScript("window.scrollBy(0, 800);");
+				Thread.sleep(1000);
+			}
+		} catch (Exception ignored) {
+		}
+
+		// 提取年付计划 / Extract annual plans
+		plans = extractPlans(driver, "Annual", plans, extractor, "div._dwg-plan-card-v2__section_nnw6p_6");
+
+		// 构建平台结构输出 / Build final structured output
+		return buildPlatformObject("Dropbox", plans, Arrays.asList("Monthly", "Annual"),
+				Arrays.asList("Documents", "Photos", "Videos"), "Free plan: web upload limit is 2GB per file",
+				new ArrayList<>(), // Integrations
+				"Supports upgrade; some plans do not support downgrade");
 	}
 
 	// 切换 Dropbox 年付按钮
@@ -199,19 +163,121 @@ public class WebCrawler {
 		}
 	}
 
-	// 提取所有计划并合并付费选项
-	// Extract and merge plan data across billing cycles
+	// OneDrive 爬虫流程
+	// OneDrive crawling logic
+	private static Map<String, Object> crawlOneDrive(WebDriver driver) {
+		driver.get("https://www.microsoft.com/en-ca/microsoft-365/onedrive/compare-onedrive-plans");
+		sleep(1500);
+
+		// 模拟滚动，确保页面加载全部计划
+		// Scroll to load all plan blocks
+		try {
+			for (int i = 0; i < 3; i++) {
+				((JavascriptExecutor) driver).executeScript("window.scrollBy(0, 800);");
+				Thread.sleep(1000);
+			}
+		} catch (Exception ignored) {
+		}
+
+		// 初始化解析器
+		// Initialize extractor
+		PlanExtractor extractor = new OneDrivePlanExtractor();
+
+		// 抓取所有卡片容器，但只使用前4个（剩下为未显示内容）
+		// Fetch all cards but only use first 4 (others are hidden)
+		List<WebElement> allBlocks = driver.findElements(By.cssSelector("div.sku-card.g-col-12.g-start-1"));
+		List<WebElement> blocks = allBlocks.subList(0, Math.min(4, allBlocks.size()));
+		// System.out.println("Block size: " + blocks.size());
+
+		// 抓取年付计划信息
+		// Extract annual plan info
+		List<Map<String, Object>> plans = extractPlans(driver, "Annual", new ArrayList<>(), extractor,
+				"div.sku-card.g-col-12.g-start-1");
+
+		// 手动加入月付价格
+		// Manually add monthly price per card
+		for (int i = 0; i < blocks.size(); i++) {
+			WebElement block = blocks.get(i);
+			String title = extractor.extractTitle(block);
+
+			// 向下转型以访问 OneDrivePlanExtractor 的特有方法
+			// Cast to OneDrivePlanExtractor to access monthly method
+			String monthlyPrice = ((OneDrivePlanExtractor) extractor).extractMonthlyPrice(block);
+
+			for (Map<String, Object> plan : plans) {
+				if (plan.get("PlanName").equals(title)) {
+					@SuppressWarnings("unchecked")
+					List<Map<String, String>> pricing = (List<Map<String, String>>) plan.get("PricingOptions");
+
+					Map<String, String> monthly = new LinkedHashMap<>();
+					monthly.put("PlanType", "Monthly");
+					monthly.put("Price", monthlyPrice);
+					pricing.add(monthly);
+				}
+			}
+		}
+
+		// 构建最终输出结构
+		// Build final platform object
+		return buildPlatformObject("OneDrive", plans, Arrays.asList("Monthly", "Annual"),
+				Arrays.asList("Documents", "Photos", "Videos"),
+				"Business plans require minimum 1–3 users, depending on tier", new ArrayList<>(), // integrations
+				"Supports upgrade and downgrade through Microsoft Account");
+	}
+
+	private static Map<String, Object> crawlBox(WebDriver driver) {
+		driver.get("https://www.box.com/pricing/individual");
+		sleep(1500);
+
+		try {
+			for (int i = 0; i < 2; i++) {
+				((JavascriptExecutor) driver).executeScript("window.scrollBy(0, 800);");
+				Thread.sleep(800);
+			}
+		} catch (Exception ignored) {
+		}
+
+		PlanExtractor extractor = new BoxPlanExtractor();
+		String selector = "div.pricing-plans-row.pricing-plans--has-common-features div.pricing-package.pricing-package--recommended";
+
+		// 两次调用 extractPlans，合并月付与年付
+		List<Map<String, Object>> plans = extractPlans(driver, "Annual", new ArrayList<>(), extractor, selector);
+		plans = extractPlans(driver, "Monthly", plans, extractor, selector);
+
+		return buildPlatformObject("Box", plans, Arrays.asList("Monthly", "Annual"),
+				Arrays.asList("Documents", "Photos", "Videos", "Audio"),
+				"Free plan has limited integrations; paid plans include Microsoft 365 and G Suite support",
+				new ArrayList<>(), "Supports upgrading online via Box account");
+	}
+
+	// 提取所有计划并合并付费选项（选择器参数化）
+	// Extract and merge plan data across billing cycles (with flexible selector)
 	private static List<Map<String, Object>> extractPlans(WebDriver driver, String planType,
-			List<Map<String, Object>> existingPlans, PlanExtractor extractor) {
+			List<Map<String, Object>> existingPlans, PlanExtractor extractor, String blockSelector) {
+
 		Map<String, Map<String, Object>> planMap = new LinkedHashMap<>();
+
+		// 将已有计划映射为 Map 方便后续合并
+		// Map existing plans for merging
 		for (Map<String, Object> plan : existingPlans) {
 			String name = (String) plan.get("PlanName");
 			planMap.put(name, plan);
 		}
 
-		List<WebElement> blocks = driver.findElements(By.cssSelector("div.staJ7e, div[data-testid='plan-card']"));
+		// 获取所有计划块元素（通过参数传入的选择器）
+		// Get all plan block elements using provided selector
+		List<WebElement> allBlocks = driver.findElements(By.cssSelector(blockSelector));
+		List<WebElement> blocks = allBlocks.subList(0, Math.min(4, allBlocks.size()));
+
 		for (WebElement block : blocks) {
 			String title = extractor.extractTitle(block);
+
+			// 跳过 Google AI Pro 年付（它只支持月付）
+			// Skip Google AI Pro Annual
+			if (title.equalsIgnoreCase("Google AI Pro (2 TB)") && planType.equalsIgnoreCase("Annual")) {
+				continue;
+			}
+
 			String price = extractor.extractPrice(block, planType);
 			List<String> features = extractor.extractFeatures(block);
 
@@ -228,7 +294,7 @@ public class WebCrawler {
 			} else {
 				plan = new LinkedHashMap<>();
 				plan.put("PlanName", title);
-				System.out.print(plan);
+				// System.out.print(111);
 				plan.put("Storage", extractStorageFromFeatures(features));
 				plan.put("Features", features);
 				List<Map<String, String>> pricing = new ArrayList<>();
@@ -237,7 +303,26 @@ public class WebCrawler {
 				planMap.put(title, plan);
 			}
 		}
+
 		return new ArrayList<>(planMap.values());
+	}
+
+	private static String extractStorageFromFeatures(List<String> features) {
+		Pattern pattern = Pattern.compile("(?i)(\\d+(\\.\\d+)?\\s*(GB|TB))");
+		// System.out.print(features);
+
+		for (String f : features) {
+			// 只处理包含“of storage”或“of cloud storage”的行
+			String lower = f.toLowerCase();
+			// System.out.print(lower);
+			if (lower.contains("of storage") || lower.contains("of cloud storage") || lower.contains("for the team")) {
+				Matcher matcher = pattern.matcher(f);
+				if (matcher.find()) {
+					return matcher.group(1); // 提取 "1 TB" 这样的字段
+				}
+			}
+		}
+		return "Unknown";
 	}
 
 	// 构建平台 JSON 对象
@@ -275,10 +360,6 @@ public class WebCrawler {
 				if (!value.isEmpty() && !value.equalsIgnoreCase("N/A")) {
 					storage.add(value);
 				}
-			} else if (s == null || String.valueOf(s).trim().isEmpty()
-					|| "N/A".equalsIgnoreCase(String.valueOf(s).trim())) {
-				// 可在此加入 fallback 逻辑，例如从 Features 提取（你若需要我可补）
-				// 示例：plan.put("Storage", extractFromFeatures(plan.get("Features")));
 			}
 		}
 		return storage;

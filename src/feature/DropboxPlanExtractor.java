@@ -29,12 +29,27 @@ public class DropboxPlanExtractor implements PlanExtractor {
 		try {
 			List<WebElement> prices = block.findElements(By.cssSelector("span[data-testid='price_test_id']"));
 			for (WebElement el : prices) {
-				if (el.isDisplayed())
-					return el.getText().trim();
+				if (el.isDisplayed()) {
+					String raw = el.getText().trim(); // e.g. "$11.99/mo"
+					String[] tokens = raw.split("\\$");
+					if (tokens.length > 1) {
+						String amountPart = tokens[1].split(" ")[0]; // e.g. "11.99"
+						double value = Double.parseDouble(amountPart);
+						// int rounded = (int) Math.round(value);
+						// return String.valueOf(value);
+						if (planType.equalsIgnoreCase("Annual")) {
+							int annual = (int) Math.round(value * 12);
+							return String.valueOf(annual);
+						} else if (planType.equalsIgnoreCase("Monthly")) {
+							// int monthly = (int) Math.round(annualMonthly / 0.75);
+							return String.valueOf(value);
+						}
+					}
+				}
 			}
 		} catch (Exception ignored) {
 		}
-		return "FREE";
+		return "0";
 	}
 
 	@Override
