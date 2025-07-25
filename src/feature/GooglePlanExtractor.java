@@ -35,7 +35,8 @@ public class GooglePlanExtractor implements PlanExtractor {
 			List<WebElement> allSpans = block.findElements(By.cssSelector("span"));
 			for (WebElement span : allSpans) {
 				String raw = span.getText().trim();
-				if (raw.contains("$") && !raw.toLowerCase().contains("after")) {
+				// if (raw.contains("$") && !raw.toLowerCase().contains("after")) {
+				if (raw.contains("$") && raw.contains("/")) {
 					String[] tokens = raw.split("\\$");
 					if (tokens.length > 1) {
 						String amountPart = tokens[1].split("[^\\d\\.]+")[0];

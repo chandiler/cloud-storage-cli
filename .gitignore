@@ -2,6 +2,7 @@
 /bin/
 /build/
 /out/
+/data/
 
 # IDE settings
 *.iml
