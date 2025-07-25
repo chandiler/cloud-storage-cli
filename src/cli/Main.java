@@ -53,7 +53,8 @@ public class Main {
 		List<String> selectedFeatures = new FeatureInputScreen().showAndGetResult();
 
 		// Build user request
-		UserRequest request = new FilterInputScreen().showAndGetResult();
+		//UserRequest request = new FilterInputScreen().showAndGetResult();
+		UserRequest request = new UserRequest();
 		request.setFeatureKeywords(selectedFeatures);
 		request.setSubscriptionPlan(subscriptionPlan);
 		request.setBudgetRange(selectedBudget);
