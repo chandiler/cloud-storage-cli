@@ -1,6 +1,9 @@
 package cli.ui;
 
-import java.util.*;
+import cli.utils.InputReader;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MenuScreen extends BaseScreen {
 
@@ -19,21 +22,27 @@ public class MenuScreen extends BaseScreen {
         printBoxTitle();
 
         for (int i = 0; i < options.size(); i++) {
-            String label = String.format("%d. %s", (i + 1), options.get(i).getLabel());
-            ConsolePrinter.printListItem(label);
+        	String numberColor = AnsiColors.YELLOW_BRIGHT;
+        	String textColor = AnsiColors.GREEN;
+
+        	String label = numberColor + (i + 1) + ". " + textColor + options.get(i).getLabel() + AnsiColors.RESET;
+        	ConsolePrinter.printListItem(label);
+
         }
 
-        ConsolePrinter.printPrompt("Select an option");
-        Scanner scanner = new Scanner(System.in);
-        try {
-            int choice = Integer.parseInt(scanner.nextLine());
-            if (choice >= 1 && choice <= options.size()) {
-                options.get(choice - 1).execute();
-            } else {
-                ConsolePrinter.printError("Invalid option.");
+        while (true) {
+            String input = InputReader.readString("Select an option");
+            try {
+                int choice = Integer.parseInt(input);
+                if (choice >= 1 && choice <= options.size()) {
+                    options.get(choice - 1).execute();
+                    break; // exit the loop after valid selection
+                } else {
+                    ConsolePrinter.printError("Invalid option. Please select a valid number from the list.");
+                }
+            } catch (NumberFormatException e) {
+                ConsolePrinter.printError("Invalid input. Please enter a number.");
             }
-        } catch (NumberFormatException e) {
-            ConsolePrinter.printError("Invalid input, please enter a number.");
         }
     }
 }

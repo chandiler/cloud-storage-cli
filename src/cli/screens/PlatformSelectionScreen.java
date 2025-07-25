@@ -1,22 +1,23 @@
 package cli.screens;
 
 import java.util.concurrent.atomic.AtomicReference;
-
 import cli.ui.MenuOption;
 import cli.ui.MenuScreen;
+import types.CloudStoragePlatform;
 
 public class PlatformSelectionScreen {
 
-    public static String show() {
-        AtomicReference<String> selectedPlatform = new AtomicReference<>("All");
+    public static CloudStoragePlatform show() {
+        AtomicReference<CloudStoragePlatform> selectedPlatform = new AtomicReference<>(CloudStoragePlatform.ALL);
 
         MenuScreen screen = new MenuScreen("Select Preferred Platform");
 
-        screen.addOption(new MenuOption("Google Drive", () -> selectedPlatform.set("Google Drive")));
-        screen.addOption(new MenuOption("Dropbox", () -> selectedPlatform.set("Dropbox")));
-        screen.addOption(new MenuOption("OneDrive", () -> selectedPlatform.set("OneDrive")));
-        screen.addOption(new MenuOption("Box", () -> selectedPlatform.set("Box")));
-        screen.addOption(new MenuOption("No preference", () -> selectedPlatform.set("All")));
+        for (CloudStoragePlatform service : CloudStoragePlatform.values()) {
+            screen.addOption(new MenuOption(
+                service.getDescription(), 
+                () -> selectedPlatform.set(service)
+            ));
+        }
 
         screen.show();
         return selectedPlatform.get();

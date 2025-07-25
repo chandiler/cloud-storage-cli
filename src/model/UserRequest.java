@@ -2,11 +2,19 @@ package model;
 
 import java.util.List;
 
+import types.BudgetRange;
+import types.StorageRange;
+import types.SubscriptionPlan;
+
 public class UserRequest {
     private Double maxBudget;          
     private String billingType;         
     private String minStorage;          
     private List<String> featureKeywords;
+    private SubscriptionPlan subscriptionPlan;
+    private BudgetRange budgetRange;
+    private StorageRange storageRange;
+
 
     public Double getMaxBudget() {
         return maxBudget;
@@ -39,4 +47,29 @@ public class UserRequest {
     public void setFeatureKeywords(List<String> featureKeywords) {
         this.featureKeywords = featureKeywords;
     }
+    
+    public SubscriptionPlan getSubscriptionPlan() {
+        return subscriptionPlan;
+    }
+
+    public void setSubscriptionPlan(SubscriptionPlan subscriptionPlan) {
+        this.subscriptionPlan = subscriptionPlan;
+    }
+
+    public BudgetRange getBudgetRange() {
+        return budgetRange;
+    }
+
+    public void setBudgetRange(BudgetRange budgetRange) {
+        this.budgetRange = budgetRange;
+    }
+
+    public StorageRange getStorageRange() {
+        return storageRange;
+    }
+
+    public void setStorageRange(StorageRange storageRange) {
+        this.storageRange = storageRange;
+    }
+
 }

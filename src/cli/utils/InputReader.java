@@ -20,7 +20,7 @@ public class InputReader {
     public static void initAutoComplete(WordCompleter completer) {
         try {
             Terminal terminal = TerminalBuilder.builder().system(true).build();
-            //completer.printAllWords();
+         
             WordCompletionAdapter adapter = new WordCompletionAdapter(completer);
             reader = LineReaderBuilder.builder()
                     .terminal(terminal)
