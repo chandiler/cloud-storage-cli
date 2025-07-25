@@ -25,8 +25,9 @@ public class Main {
 
 		// Crawl and parse
 		ConsolePrinter.printInfo("Crawling data from " + platform + " ...");
-		String rawHtml = new WebCrawler().crawl(platform.getDescription());
-		List<Plan> plans = new HtmlParser().parse(rawHtml);
+		//String rawHtml = new WebCrawler().crawl(platform.getDescription());
+		//List<Plan> plans = new HtmlParser().parse(rawHtml);
+		List<Plan> plans = List.of(); // Placeholder: Replace with actual data loading
 		ConsolePrinter.printSuccess("Data loaded.\n");
 
 		// Load words from crawled data

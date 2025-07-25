@@ -22,6 +22,15 @@ public enum BudgetRange {
     public String getDescription() {
         return label;
     }
+    
+    public int getMin() {
+        return min;
+    }
+
+    public int getMax() {
+        return max;
+    }
+
 
     public boolean isMonthlyOnly() {
         return this == RANGE_1_5 || this == RANGE_6_10 || this == FREE;
