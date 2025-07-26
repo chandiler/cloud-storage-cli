@@ -31,8 +31,9 @@ public class Main {
 		ConsolePrinter.printSuccess("Data loaded.\n");
 
 		// Load words from crawled data
+		Set<String> words = Set.of("admin", "dropbox", "drive", "onedrive", "icloud", "storage", "encryption", "version history");
 		completer.insertWords(
-				Set.of("admin", "dropbox", "drive", "onedrive", "icloud", "storage", "encryption", "version history"));
+				words);
 		InputReader.initAutoComplete(completer);
 
 		// Subscription Plan
@@ -50,8 +51,13 @@ public class Main {
 		ConsolePrinter.printInfo("Selected Storage: " + selectedStorage.getDescription() + "\n");
 
 		// Optional: Ask for features
-		List<String> selectedFeatures = new FeatureInputScreen().showAndGetResult();
-
+		
+		SpellChecker spellChecker = new SpellChecker();
+		spellChecker.insertWords(words);
+		FeatureInputScreen featureInputScreen = new FeatureInputScreen(spellChecker);
+		String wordSpelled = featureInputScreen.showAndGetResult();
+		ConsolePrinter.printInfo("Selected Storage: " + selectedStorage.getDescription() + "\n");
+		List<String> selectedFeatures = List.of();
 		// Build user request
 		//UserRequest request = new FilterInputScreen().showAndGetResult();
 		UserRequest request = new UserRequest();

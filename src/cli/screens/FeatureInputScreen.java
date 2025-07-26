@@ -1,97 +1,48 @@
 package cli.screens;
 
-import cli.ui.BaseScreen;
 import cli.ui.ConsolePrinter;
+import cli.ui.MenuOption;
+import cli.ui.MenuScreen;
 import cli.utils.InputReader;
-import feature.FeatureExtractor;
 import feature.SpellChecker;
-import feature.WordCompleter;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class FeatureInputScreen extends BaseScreen {
-	private final WordCompleter wordCompleter = new WordCompleter();
-	private final SpellChecker spellChecker = new SpellChecker();
+public class FeatureInputScreen {
 
-	public FeatureInputScreen() {
-		super("Feature Keyword Input");
-//		String jsonPath = "data/cloud_storage_data_en_cleaned.json";
-//
-//		FeatureExtractor featureExtractor = new FeatureExtractor(jsonPath);
-//		featureExtractor.extractFeaturesFromJson();
 
-		spellChecker.insertWords(getFeatures());
-		
-//		wordCompleter.insertWords(featureExtractor.singleWordFeatures);
-//		wordCompleter.printAllWords();
-	}
-	
-	 public static Set<String> getFeatures() {
-	        Set<String> features = new HashSet<>();
-	        features.add("Advanced workflow capabilities");
-	        features.add("Advanced key management");
-	        features.add("Ad-free Outlook and mobile email and calendar with advanced security features");
-	        features.add("admin control");
-	        features.add("Automated controls protecting against threats and data leaks");
-	        features.add("Automatic spam and malware filtering");
-	        features.add("AI-powered content portals with intelligent Hubs");
-	        features.add("AI-powered image creation and editing with Microsoft Designer");
-	        features.add("All other benefits in the Premium plan");
-	        features.add("Anytime phone and web support");
-	        features.add("Brand your files to share");
-	        return features;
-	    }
+    private final SpellChecker spellChecker;
 
-	public List<String> showAndGetResult() {
-		printBoxTitle();
+    public FeatureInputScreen(SpellChecker spellChecker) {
+        this.spellChecker = spellChecker;
+    }
 
-		while (true) {
-			String keyword = InputReader.readString("Do you have a specific feature in mind?\n(Press Enter to skip)")
-					.trim();
+    public String showAndGetResult() {
+        // Preguntar por la palabra clave
+        String keyword = InputReader.readString("Do you have a specific feature in mind?\n(Press Enter to skip)");
 
-			if (keyword.isEmpty()) {
-				return null; // skip input
-			}
+        // Si el usuario no escribe nada
+        if (keyword.trim().isEmpty()) {
+            return null;
+        }
 
-			String corrected = spellChecker.check(keyword);
+        // Obtener correcciones del SpellChecker
+        List<String> corrected = spellChecker.check(keyword, 3, 5);
 
-			// Check if the selected keyword is correct
-			if (!corrected.equalsIgnoreCase(keyword)) {
-				boolean confirmed = InputReader.readYesNo("Did you mean: " + corrected + "?");
-				if (!confirmed) {
-					ConsolePrinter.printInfo("Let's try again.");
-					// Get back to the input loop
-					continue; 
-				}
-			}
+        if (corrected.isEmpty()) {
+            ConsolePrinter.printInfo("No suggestions found for: " + keyword);
+            return null;
+        }
 
-			
-			List<String> suggestions = wordCompleter.complete(corrected);
+        // Mostrar sugerencias en una pantalla tipo menú
+        AtomicReference<String> selected = new AtomicReference<>(corrected.get(0));
+        MenuScreen screen = new MenuScreen("Did you mean?");
+        for (String word : corrected) {
+            screen.addOption(new MenuOption(word, () -> selected.set(word)));
+        }
 
-			if (suggestions.isEmpty()) {
-				ConsolePrinter.printInfo("No related features found.");
-				boolean tryAgain = InputReader.readYesNo("Do you want to try a different keyword?");
-				if (tryAgain) continue;
-				else return null;
-			}
-
-			System.out.println("Related features:");
-			for (String s : suggestions) {
-				System.out.println(" - " + s);
-			}
-
-			boolean use = InputReader.readYesNo("Use these features to filter plans?");
-			if (use) return suggestions;
-			else {
-				ConsolePrinter.printInfo("You can try entering a different feature.");
-			}
-		}
-	}
-
-	@Override
-	public void show() {
-		// no-op; usamos showAndGetResult()
-	}
+        screen.show();
+        return selected.get();
+    }
 }
