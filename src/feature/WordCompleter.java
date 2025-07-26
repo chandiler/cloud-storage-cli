@@ -142,7 +142,7 @@ public class WordCompleter {
      * @param words the set of words to insert
      */
     public void insertWords(Set<String> words) {
-        words.forEach(trie::insert);
+    	 words.forEach(word -> trie.insert(word.toLowerCase()));
     }
 
     /**
@@ -150,6 +150,11 @@ public class WordCompleter {
      */
     public void printAllWords() {
         trie.getAllWords().forEach(System.out::println);
+    }
+    
+    public  List<String> getAllWords(){
+    	    return trie.getAllWords();
+        
     }
 
     /**
