@@ -5,81 +5,83 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 
 public class Plan {
-    @SerializedName("PlanName")
-    private String planName;
+	@SerializedName("PlanName")
+	private String planName;
 
-    @SerializedName("Storage")
-    private String storage;
+	@SerializedName("Storage")
+	private String storage;
 
-    @SerializedName("Features")
-    private List<String> features;
+	@SerializedName("Features")
+	private List<String> features;
 
-    @SerializedName("PricingOptions")
-    private List<PricingOption> pricingOptions;
+	@SerializedName("PricingOptions")
+	private List<PricingOption> pricingOptions;
 
-    @SerializedName("Highlight")
-    private String highlight;
+	@SerializedName("Highlight")
+	private String highlight;
 
-    @SerializedName("Platform")
-    private String platform;            
+	@SerializedName("Platform")
+	private String platform;
 
-    public String getPlanName() {
-        return planName;
-    }
+	public String getPlanName() {
+		return planName;
+	}
 
-    public void setPlanName(String planName) {
-        this.planName = planName;
-    }
+	public void setPlanName(String planName) {
+		this.planName = planName;
+	}
 
-    public String getStorage() {
-        return storage;
-    }
+	public String getStorage() {
+		return storage;
+	}
 
-    public void setStorage(String storage) {
-        this.storage = storage;
-    }
+	public void setStorage(String storage) {
+		this.storage = storage;
+	}
 
-    public List<String> getFeatures() {
-        return features;
-    }
+	public List<String> getFeatures() {
+		return features;
+	}
 
-    public void setFeatures(List<String> features) {
-        this.features = features;
-    }
+	public void setFeatures(List<String> features) {
+		this.features = features;
+	}
 
-    public List<PricingOption> getPricingOptions() {
-        return pricingOptions;
-    }
+	public List<PricingOption> getPricingOptions() {
+		return pricingOptions;
+	}
 
-    public void setPricingOptions(List<PricingOption> pricingOptions) {
-        this.pricingOptions = pricingOptions;
-    }
+	public void setPricingOptions(List<PricingOption> pricingOptions) {
+		this.pricingOptions = pricingOptions;
+	}
 
-    public String getHighlight() {
-        return highlight;
-    }
+	public String getHighlight() {
+		return highlight;
+	}
 
-    public void setHighlight(String highlight) {
-        this.highlight = highlight;
-    }
-    
-    public String getPlatform() {
-        return platform;
-    }
+	public void setHighlight(String highlight) {
+		this.highlight = highlight;
+	}
 
-    public void setPlatform(String platform) {
-        this.platform = platform;
-    }
+	public String getPlatform() {
+		return platform;
+	}
 
-    public String getDisplayPrice() {
-        if (pricingOptions == null || pricingOptions.isEmpty()) return "N/A";
-        List<String> prices = new ArrayList<>();
-        for (PricingOption p : pricingOptions) {
-            prices.add(p.getPrice());
-        }
-        return String.join(" | ", prices);
-    }
+	public void setPlatform(String platform) {
+		this.platform = platform;
+	}
 
-    public String getShortDescription() {
-        return storage + " - " + (features != null && !features.isEmpty() ? features.get(0) : "No detail");
-    }
+	public String getDisplayPrice() {
+		if (pricingOptions == null || pricingOptions.isEmpty())
+			return "N/A";
+		List<String> prices = new ArrayList<>();
+		for (PricingOption p : pricingOptions) {
+			prices.add(p.getPrice());
+		}
+		return String.join(" | ", prices);
+	}
+
+	public String getShortDescription() {
+		return storage + " - " + (features != null && !features.isEmpty() ? features.get(0) : "No detail");
+	}
+}

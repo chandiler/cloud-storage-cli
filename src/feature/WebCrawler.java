@@ -22,16 +22,17 @@ import java.util.Scanner;
 
 public class WebCrawler {
 
-	public static void main(String[] args) {
-
-		// 获取用户输入平台
-		// Ask user which platform to crawl
-		Scanner scanner = new Scanner(System.in);
-		System.out.println("Select platform to crawl: Google / Dropbox / Box / OneDrive / All");
-		System.out.print(">>> "); // 给个明显提示
-		String selected = scanner.nextLine().trim().toLowerCase();
-		System.out.println("You selected: " + selected);
-		scanner.close();
+	public static void run(String selected) {
+		System.out.print(selected);
+		// // 获取用户输入平台
+		// // Ask user which platform to crawl
+		// Scanner scanner = new Scanner(System.in);
+		// System.out.println("Select platform to crawl: Google / Dropbox / Box /
+		// OneDrive / All");
+		// System.out.print(">>> "); // 给个明显提示
+		// String selected = scanner.nextLine().trim().toLowerCase();
+		// System.out.println("You selected: " + selected);
+		// scanner.close();
 		// call cli.screen. menuscreen()
 
 		// 启动 Chrome 浏览器无痕模式
@@ -45,18 +46,18 @@ public class WebCrawler {
 
 		List<Map<String, Object>> allPlatforms = new ArrayList<>();
 
-		if (selected.equals("google") || selected.equals("all")) {
+		if (selected.equals("Google Drive") || selected.equals("All")) {
 			// System.out.println(1111111);
 			allPlatforms.add(crawlGoogle(driver));
 		}
-		if (selected.equals("dropbox") || selected.equals("all")) {
+		if (selected.equals("Dropbox") || selected.equals("All")) {
 			// System.out.println(2111111);
 			allPlatforms.add(crawlDropbox(driver));
 		}
-		if (selected.equals("onedrive") || selected.equals("all")) {
+		if (selected.equals("OneDrive") || selected.equals("All")) {
 			allPlatforms.add(crawlOneDrive(driver));
 		}
-		if (selected.equals("box") || selected.equals("all")) {
+		if (selected.equals("Box") || selected.equals("All")) {
 			allPlatforms.add(crawlBox(driver));
 		}
 

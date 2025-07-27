@@ -7,6 +7,7 @@ import cli.screens.*;
 import cli.ui.ConsolePrinter;
 import cli.utils.InputReader;
 import feature.*;
+import filter.UserFilter;
 import model.Plan;
 import model.UserRequest;
 import types.BudgetRange;
@@ -15,7 +16,7 @@ import types.StorageRange;
 import types.SubscriptionPlan;
 
 public class Main {
-	
+
 	public static void main(String[] args) {
 		// Autocomplete
 		WordCompleter completer = new WordCompleter();
@@ -26,56 +27,91 @@ public class Main {
 
 		// Crawl and parse
 		ConsolePrinter.printInfo("Crawling data from " + platform + " ...");
-		//String rawHtml = new WebCrawler().crawl(platform.getDescription());
-		//List<Plan> plans = new HtmlParser().parse(rawHtml);
+		new WebCrawler().run(platform.getDescription());
+		// List<Plan> plans = new HtmlParser().parse(rawHtml);
 		List<Plan> plans = List.of(); // Placeholder: Replace with actual data loading
 		ConsolePrinter.printSuccess("Data loaded.\n");
 
 		// Load words from crawled data
-		Set<String> words = Set.of("admin", "dropbox", "drive", "onedrive", "icloud", "storage", "encryption", "version history");
-		completer.insertWords(
-				words);
+		Set<String> words = Set.of("admin", "dropbox", "drive", "onedrive", "icloud", "storage", "encryption",
+				"version history");
+		completer.insertWords(words);
 		InputReader.initAutoComplete(completer);
 
 		// Subscription Plan
-		SubscriptionPlan subscriptionPlan = SubscriptionPlanScreen.show();
-		ConsolePrinter.printInfo("Selected Subscription Plan: " + subscriptionPlan.getDescription() + "\n");
-
-		// Filtered Budget options
-		BudgetRange[] allowedBudgets = BudgetRange.getBySubscriptionPlan(subscriptionPlan);
-		BudgetRange selectedBudget = BudgetSelectionScreen.show(allowedBudgets);
-		ConsolePrinter.printInfo("Selected Budget: " + selectedBudget.getDescription() + "\n");
-
-		// Optional: Filter by storage capacity
-		StorageRange[] allowedStorage = StorageRange.getByBudget(selectedBudget);
-		StorageRange selectedStorage = StorageCapacityScreen.show(allowedStorage);
-		ConsolePrinter.printInfo("Selected Storage: " + selectedStorage.getDescription() + "\n");
+		// SubscriptionPlan subscriptionPlan = SubscriptionPlanScreen.show();
+		// ConsolePrinter.printInfo("Selected Subscription Plan: " +
+		// subscriptionPlan.getDescription() + "\n");
+		//
+		// // Filtered Budget options
+		// BudgetRange[] allowedBudgets =
+		// BudgetRange.getBySubscriptionPlan(subscriptionPlan);
+		// BudgetRange selectedBudget = BudgetSelectionScreen.show(allowedBudgets);
+		// ConsolePrinter.printInfo("Selected Budget: " +
+		// selectedBudget.getDescription() + "\n");
+		//
+		// // Optional: Filter by storage capacity
+		/*StorageRange[] allowedStorage = StorageRange.getByBudget(selectedBudget);
+		StorageRange selectedStorage = StorageCapacityScreen.show(allowedStorage);*/
+		// ConsolePrinter.printInfo("Selected Storage: " +
+		// selectedStorage.getDescription() + "\n");
 
 		// Optional: Ask for features
 		
+		UserRequest request = UserFilter.collect();
+
+		SubscriptionPlan subscriptionPlan = SubscriptionPlanScreen.show();
+		request.setSubscriptionPlan(subscriptionPlan);
+		ConsolePrinter.printInfo("Selected Subscription Plan: " + subscriptionPlan.getDescription() + "\n");
+
+		BudgetRange[] allowedBudgets = BudgetRange.getBySubscriptionPlan(subscriptionPlan);
+		BudgetRange selectedBudget = BudgetSelectionScreen.show(allowedBudgets);
+		request.setBudgetRange(selectedBudget);
+		ConsolePrinter.printInfo("Selected Budget: " + selectedBudget.getDescription() + "\n");
+
+		StorageRange[] allowedStorage = StorageRange.values();
+		StorageRange selectedStorage = StorageCapacityScreen.show(allowedStorage);
+		request.setStorageRange(selectedStorage);
+		ConsolePrinter.printInfo("Selected Storage: " + selectedStorage.getDescription() + "\n");
+
 		SpellChecker spellChecker = new SpellChecker();
 		spellChecker.insertWords(words);
 		FeatureInputScreen featureInputScreen = new FeatureInputScreen(spellChecker);
 		String wordSpelled = featureInputScreen.showAndGetResult();
 		ConsolePrinter.printInfo("Selected Storage: " + selectedStorage.getDescription() + "\n");
 		List<String> selectedFeatures = List.of();
-		// Build user request
-		//UserRequest request = new FilterInputScreen().showAndGetResult();
-		UserRequest request = new UserRequest();
+
+		List<String> selectedFeatures = new FeatureInputScreen().showAndGetResult();
 		request.setFeatureKeywords(selectedFeatures);
-		request.setSubscriptionPlan(subscriptionPlan);
-		request.setBudgetRange(selectedBudget);
-		request.setStorageRange(selectedStorage); // Can be null if not filtered
 
-		// Recommendation
 		List<Plan> filteredPlans = new Recommender().recommend(plans, request);
-
 		List<Plan> ranked = new MatchedPlansScreen().showAndGetResult(filteredPlans);
 		if (!ranked.isEmpty()) {
 			RecommendationScreen.show(ranked.get(0));
 		}
+
+		if (!ContinueSearchScreen.show()) {
+			ConsolePrinter.printSuccess("Thank you for using our service. Goodbye!");
+			break;
+		}
+
+		// Build user request
+		// UserRequest request = new FilterInputScreen().showAndGetResult();
+		/*UserRequest request = new UserRequest();
+		request.setFeatureKeywords(selectedFeatures);
+		request.setSubscriptionPlan(subscriptionPlan);
+		request.setBudgetRange(selectedBudget);
+		request.setStorageRange(selectedStorage); // Can be null if not filtered
+		
+		// Recommendation
+		List<Plan> filteredPlans = new Recommender().recommend(plans, request);
+		
+		List<Plan> ranked = new MatchedPlansScreen().showAndGetResult(filteredPlans);
+		if (!ranked.isEmpty()) {
+			RecommendationScreen.show(ranked.get(0));
+		}*/
 	}
-	
+
 	/* For testing without wordcompletor and spellchecking features
 	public static void main(String[] args) {
 		// Autocomplete
@@ -87,7 +123,7 @@ public class Main {
 			UserRequest request = UserFilter.collect();
 			request.setPlatform(platform);
 			ConsolePrinter.printInfo("Selected platform: " + platform + "\n");
-
+	
 			// Crawl and parse
 			ConsolePrinter.printInfo("Crawling data from " + platform + " ...");
 			//String rawHtml = new WebCrawler().crawl(platform.getDescription());
@@ -110,44 +146,44 @@ public class Main {
 			        plan.getPlanName(), plan.getStorage(),
 			        plan.getPricingOptions() != null ? plan.getPricingOptions().size() : 0);
 			}*/
-			//ConsolePrinter.printSuccess("Data loaded.\n");
+	// ConsolePrinter.printSuccess("Data loaded.\n");
 
-			// Load words from crawled data
-			/*
-			completer.insertWords(
-					Set.of("admin", "dropbox", "drive", "onedrive", "icloud", "storage", "encryption", "version history"));
-			InputReader.initAutoComplete(completer);
-			*/
-			
-			/*
-			SubscriptionPlan subscriptionPlan = SubscriptionPlanScreen.show();
-			request.setSubscriptionPlan(subscriptionPlan);
-			ConsolePrinter.printInfo("Selected Subscription Plan: " + subscriptionPlan.getDescription() + "\n");
+	// Load words from crawled data
+	/*
+	completer.insertWords(
+			Set.of("admin", "dropbox", "drive", "onedrive", "icloud", "storage", "encryption", "version history"));
+	InputReader.initAutoComplete(completer);
+	*/
 
-			BudgetRange[] allowedBudgets = BudgetRange.getBySubscriptionPlan(subscriptionPlan);
-			BudgetRange selectedBudget = BudgetSelectionScreen.show(allowedBudgets);
-			request.setBudgetRange(selectedBudget);
-			ConsolePrinter.printInfo("Selected Budget: " + selectedBudget.getDescription() + "\n");
-
-			StorageRange[] allowedStorage = StorageRange.values();
-			StorageRange selectedStorage = StorageCapacityScreen.show(allowedStorage);
-			request.setStorageRange(selectedStorage);
-			ConsolePrinter.printInfo("Selected Storage: " + selectedStorage.getDescription() + "\n");
-
-			List<String> selectedFeatures = new FeatureInputScreen().showAndGetResult();
-			request.setFeatureKeywords(selectedFeatures);
-			
-			List<Plan> filteredPlans = new Recommender().recommend(plans, request);
-			List<Plan> ranked = new MatchedPlansScreen().showAndGetResult(filteredPlans);
-			if (!ranked.isEmpty()) {
-			    RecommendationScreen.show(ranked.get(0));
-			}
-			
-			if (!ContinueSearchScreen.show()) {
-                ConsolePrinter.printSuccess("Thank you for using our service. Goodbye!");
-                break;
-            }
-			
-		} 
+	/*
+	SubscriptionPlan subscriptionPlan = SubscriptionPlanScreen.show();
+	request.setSubscriptionPlan(subscriptionPlan);
+	ConsolePrinter.printInfo("Selected Subscription Plan: " + subscriptionPlan.getDescription() + "\n");
+	
+	BudgetRange[] allowedBudgets = BudgetRange.getBySubscriptionPlan(subscriptionPlan);
+	BudgetRange selectedBudget = BudgetSelectionScreen.show(allowedBudgets);
+	request.setBudgetRange(selectedBudget);
+	ConsolePrinter.printInfo("Selected Budget: " + selectedBudget.getDescription() + "\n");
+	
+	StorageRange[] allowedStorage = StorageRange.values();
+	StorageRange selectedStorage = StorageCapacityScreen.show(allowedStorage);
+	request.setStorageRange(selectedStorage);
+	ConsolePrinter.printInfo("Selected Storage: " + selectedStorage.getDescription() + "\n");
+	
+	List<String> selectedFeatures = new FeatureInputScreen().showAndGetResult();
+	request.setFeatureKeywords(selectedFeatures);
+	
+	List<Plan> filteredPlans = new Recommender().recommend(plans, request);
+	List<Plan> ranked = new MatchedPlansScreen().showAndGetResult(filteredPlans);
+	if (!ranked.isEmpty()) {
+	    RecommendationScreen.show(ranked.get(0));
+	}
+	
+	if (!ContinueSearchScreen.show()) {
+	    ConsolePrinter.printSuccess("Thank you for using our service. Goodbye!");
+	    break;
+	}
+	
+	} 
 	}*/
 }
