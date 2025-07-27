@@ -271,6 +271,15 @@ public class UserFilter {
 	                scored.add(new ScorePlan(plan, matchScore));
 	            }
 	        }
+	        System.out.printf(
+                    "DEBUG PLAN: %-25s | Platform: %-10s | Storage: %-10s | SubscriptionPlanOK: %-5s | PriceOK: %-5s | StorageOK: %-5s\n",
+                    plan.getPlanName(),
+                    plan.getPlatform(),
+                    plan.getStorage(),
+                    planTypeOk,
+                    priceOk,
+                    storageOk
+                );
 	    }
 
 	    Collections.sort(scored, Comparator.comparingInt(ScorePlan::getScore).reversed());
