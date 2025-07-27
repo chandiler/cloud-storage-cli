@@ -14,6 +14,7 @@ import types.BudgetRange;
 import types.CloudStoragePlatform;
 import types.StorageRange;
 import types.SubscriptionPlan;
+import java.util.concurrent.CompletableFuture;
 
 public class Main {
 
@@ -27,13 +28,19 @@ public class Main {
 
 		// Crawl and parse
 		ConsolePrinter.printInfo("Crawling data from " + platform + " ...");
-		new WebCrawler().run(platform.getDescription());
+		// new WebCrawler().run(platform.getDescription());
+		// 异步任务
+		// asynac task
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			new WebCrawler().run(platform.getDescription());
+		});
+		future.join();
 		// List<Plan> plans = new HtmlParser().parse(rawHtml);
 		List<Plan> plans = List.of(); // Placeholder: Replace with actual data loading
 		ConsolePrinter.printSuccess("Data loaded.\n");
-		 FeatureExtractor extractor = new FeatureExtractor("data/cloud_storage.json");
-		 extractor.extractFeaturesFromJson();
-		 Set<String> featuresKeywords = extractor.singleWordFeatures;
+		FeatureExtractor extractor = new FeatureExtractor("data/cloud_storage.json");
+		extractor.extractFeaturesFromJson();
+		Set<String> featuresKeywords = extractor.singleWordFeatures;
 		completer.insertWords(featuresKeywords);
 		SpellChecker spellChecker = new SpellChecker();
 		spellChecker.insertWords(featuresKeywords);
@@ -58,7 +65,7 @@ public class Main {
 		// selectedStorage.getDescription() + "\n");
 
 		// Optional: Ask for features
-		
+
 		UserRequest request = UserFilter.collect();
 
 		SubscriptionPlan subscriptionPlan = SubscriptionPlanScreen.show();
@@ -75,7 +82,6 @@ public class Main {
 		request.setStorageRange(selectedStorage);
 		ConsolePrinter.printInfo("Selected Storage: " + selectedStorage.getDescription() + "\n");
 
-	
 		FeatureInputScreen featureInputScreen = new FeatureInputScreen(spellChecker);
 		List<String> selectedFeatures = featureInputScreen.showAndGetResult();
 		ConsolePrinter.printInfo("Selected Storage: " + selectedStorage.getDescription() + "\n");
@@ -89,7 +95,7 @@ public class Main {
 
 		if (!ContinueSearchScreen.show()) {
 			ConsolePrinter.printSuccess("Thank you for using our service. Goodbye!");
-			//break;
+			// break;
 		}
 
 		// Build user request
