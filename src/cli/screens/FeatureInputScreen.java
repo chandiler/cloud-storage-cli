@@ -45,4 +45,31 @@ public class FeatureInputScreen {
         screen.show();
         return selected.get();
     }
+
+    /* For testing without wordcompeter and spellchecking features
+    public List<String> showAndGetResult() {
+	        printBoxTitle();
+	
+	        while (true) {
+	            String keyword = InputReader.readString("Do you have a specific feature in mind?\n(Press Enter to skip)")
+	                    .trim();
+	
+	            if (keyword.isEmpty()) {
+	                return null; // skip input
+	            }
+	
+	            String corrected = spellChecker.check(keyword);
+	
+	            if (!corrected.equalsIgnoreCase(keyword)) {
+	                boolean confirmed = InputReader.readYesNo("Did you mean: " + corrected + "?");
+	                if (!confirmed) {
+	                    ConsolePrinter.printInfo("Let's try again.");
+	                    continue;
+	                }
+	            }
+	
+	            return List.of(corrected);
+	        }
+	 }
+     */
 }

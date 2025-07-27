@@ -17,6 +17,10 @@ public enum StorageRange {
         this.maxGB = maxGB;
     }
 
+    public int getMaxGB() {
+        return maxGB;
+    }
+
     public String getDescription() {
         return label;
     }

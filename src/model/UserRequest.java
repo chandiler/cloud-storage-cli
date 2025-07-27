@@ -5,15 +5,18 @@ import java.util.List;
 import types.BudgetRange;
 import types.StorageRange;
 import types.SubscriptionPlan;
+import types.CloudStoragePlatform;
 
 public class UserRequest {
     private Double maxBudget;          
     private String billingType;         
-    private String minStorage;          
+    private String minStorage;
     private List<String> featureKeywords;
     private SubscriptionPlan subscriptionPlan;
     private BudgetRange budgetRange;
     private StorageRange storageRange;
+    
+    private CloudStoragePlatform platform; 
 
 
     public Double getMaxBudget() {
@@ -72,4 +75,11 @@ public class UserRequest {
         this.storageRange = storageRange;
     }
 
+    public CloudStoragePlatform getPlatform() {
+        return platform;
+    }
+
+    public void setPlatform(CloudStoragePlatform platform) {
+        this.platform = platform;
+    }
 }

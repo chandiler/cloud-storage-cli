@@ -136,7 +136,7 @@ public class FeatureExtractor {
         "user", "users", "monthly", "annual", "annually"
     );
 
-    private boolean isStopWord(String word) {
+    public static boolean isStopWord(String word) {
         return STOPWORDS.contains(word.toLowerCase());
     }
 }
