@@ -77,12 +77,9 @@ public class Main {
 		SpellChecker spellChecker = new SpellChecker();
 		spellChecker.insertWords(words);
 		FeatureInputScreen featureInputScreen = new FeatureInputScreen(spellChecker);
-		String wordSpelled = featureInputScreen.showAndGetResult();
+		List<String> selectedFeatures = featureInputScreen.showAndGetResult();
 		ConsolePrinter.printInfo("Selected Storage: " + selectedStorage.getDescription() + "\n");
-		List<String> selectedFeatures = List.of();
-
-		List<String> selectedFeatures = new FeatureInputScreen().showAndGetResult();
-		request.setFeatureKeywords(selectedFeatures);
+		selectedFeatures.forEach(System.out::println);
 
 		List<Plan> filteredPlans = new Recommender().recommend(plans, request);
 		List<Plan> ranked = new MatchedPlansScreen().showAndGetResult(filteredPlans);
@@ -92,7 +89,7 @@ public class Main {
 
 		if (!ContinueSearchScreen.show()) {
 			ConsolePrinter.printSuccess("Thank you for using our service. Goodbye!");
-			break;
+			//break;
 		}
 
 		// Build user request

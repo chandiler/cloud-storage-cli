@@ -3,7 +3,7 @@ package feature;
 import java.util.*;
 
 /**
- * Utility for computing the Damerau–Levenshtein edit distance
+ * Utility class for computing the Damerau–Levenshtein distance
  * between two strings, where adjacent transpositions count as one edit.
  */
 class EditDistance {
@@ -11,26 +11,23 @@ class EditDistance {
         s1 = s1.toLowerCase();
         s2 = s2.toLowerCase();
         int m = s1.length(), n = s2.length();
-        int[][] dp = new int[m+1][n+1];
-
-        // initialize base cases
+        int[][] dp = new int[m + 1][n + 1];
         for (int i = 0; i <= m; i++) dp[i][0] = i;
         for (int j = 0; j <= n; j++) dp[0][j] = j;
-
-        // fill dp table
         for (int i = 1; i <= m; i++) {
             for (int j = 1; j <= n; j++) {
-                int cost = (s1.charAt(i-1) == s2.charAt(j-1)) ? 0 : 1;
+                int cost = s1.charAt(i - 1) == s2.charAt(j - 1) ? 0 : 1;
                 dp[i][j] = Math.min(
-                    Math.min(dp[i-1][j] + 1,    // deletion
-                             dp[i][j-1] + 1),   // insertion
-                             dp[i-1][j-1] + cost // substitution
+                    Math.min(dp[i - 1][j] + 1,    // deletion
+                             dp[i][j - 1] + 1),   // insertion
+                             dp[i - 1][j - 1] + cost // substitution
                 );
                 // adjacent transposition
                 if (i > 1 && j > 1
-                 && s1.charAt(i-1) == s2.charAt(j-2)
-                 && s1.charAt(i-2) == s2.charAt(j-1)) {
-                    dp[i][j] = Math.min(dp[i][j], dp[i-2][j-2] + 1);
+                 && s1.charAt(i - 1) == s2.charAt(j - 2)
+                 && s1.charAt(i - 2) == s2.charAt(j - 1)) {
+                    dp[i][j] = Math.min(dp[i][j],
+                                dp[i - 2][j - 2] + 1);
                 }
             }
         }
@@ -38,29 +35,18 @@ class EditDistance {
     }
 }
 
-/**
- * Node in a BK-Tree, storing one word and a map from edit distances
- * to child nodes.
- */
+/** Node of a BK‑Tree, storing one word and children keyed by edit distance. */
 class BKTreeNode {
     final String word;
-    final Map<Integer, BKTreeNode> children = new HashMap<>();
-
-    BKTreeNode(String w) {
-        this.word = w.toLowerCase();
-    }
+    final Map<Integer,BKTreeNode> children = new HashMap<>();
+    BKTreeNode(String w) { word = w.toLowerCase(); }
 }
 
-/**
- * BK-Tree for fuzzy (approximate) string matching.  Stores words
- * in a metric space under edit distance.
- */
+/** BK‑Tree for approximate string matching under edit distance. */
 class BKTree {
-    private BKTreeNode root;
+    BKTreeNode root;
 
-    /**
-     * Add a word to the BK-Tree (null-safe, lowercased).
-     */
+    /** Add a word to the tree (null-safe). */
     public void add(String word) {
         if (word == null) return;
         String w = word.toLowerCase();
@@ -68,23 +54,23 @@ class BKTree {
             root = new BKTreeNode(w);
             return;
         }
-        BKTreeNode node = root;
+        BKTreeNode cur = root;
         while (true) {
-            int dist = EditDistance.compute(w, node.word);
-            if (dist == 0) return;  // already present
-            BKTreeNode child = node.children.get(dist);
+            int d = EditDistance.compute(w, cur.word);
+            if (d == 0) return;  // already present
+            BKTreeNode child = cur.children.get(d);
             if (child != null) {
-                node = child;
+                cur = child;
             } else {
-                node.children.put(dist, new BKTreeNode(w));
+                cur.children.put(d, new BKTreeNode(w));
                 return;
             }
         }
     }
 
     /**
-     * Search for all words within maxDistance of the query.
-     * The result is unsorted; caller may sort & truncate.
+     * Return all words within maxDistance of query (unsorted).
+     * Caller may sort & limit.
      */
     public List<String> search(String query, int maxDistance) {
         if (query == null || root == null) {
@@ -94,17 +80,15 @@ class BKTree {
         List<String> result = new ArrayList<>();
         Deque<BKTreeNode> stack = new ArrayDeque<>();
         stack.push(root);
-
         while (!stack.isEmpty()) {
             BKTreeNode node = stack.pop();
             int d = EditDistance.compute(query, node.word);
             if (d <= maxDistance) {
                 result.add(node.word);
             }
-            // explore children within [d-maxDistance, d+maxDistance]
-            for (int key = d - maxDistance; key <= d + maxDistance; key++) {
-                if (key < 0) continue;
-                BKTreeNode child = node.children.get(key);
+            for (int dist = d - maxDistance; dist <= d + maxDistance; dist++) {
+                if (dist < 0) continue;
+                BKTreeNode child = node.children.get(dist);
                 if (child != null) {
                     stack.push(child);
                 }
@@ -114,23 +98,19 @@ class BKTree {
     }
 }
 
-/**
- * Simple Trie node for prefix storage.
- */
+/** Simple Trie node for prefix storage. */
 class TrieNode {
-    final Map<Character, TrieNode> children = new HashMap<>();
+    final Map<Character,TrieNode> children = new HashMap<>();
     boolean isWord = false;
 }
 
 /**
- * Trie with support for exact lookup (via fuzzySearch with distance=0).
+ * Trie with support for exact-match lookup via fuzzySearch(distance=0).
  */
 class TrieWithFuzzySearch {
     private final TrieNode root = new TrieNode();
 
-    /**
-     * Insert a word into the Trie (null-safe, lowercased).
-     */
+    /** Insert a word into the Trie (null-safe). */
     public void insert(String word) {
         if (word == null) return;
         String w = word.toLowerCase();
@@ -138,54 +118,49 @@ class TrieWithFuzzySearch {
             root.isWord = true;
             return;
         }
-        TrieNode node = root;
+        TrieNode cur = root;
         for (char c : w.toCharArray()) {
-            node = node.children.computeIfAbsent(c, k -> new TrieNode());
+            cur = cur.children.computeIfAbsent(c, k -> new TrieNode());
         }
-        node.isWord = true;
+        cur.isWord = true;
     }
 
-    /**
-     * Fuzzy-search for exact words only (distance=0).  Used internally
-     * by SpellChecker.check for exact-match mode.
-     */
+    /** Holder for an exact-match suggestion (distance always 0). */
     public static class Suggestion {
         public final String word;
         public final int distance;
-        public Suggestion(String w, int d) {
-            word = w;
-            distance = d;
-        }
+        public Suggestion(String w, int d) { word = w; distance = d; }
     }
 
-    private void dfsExact(TrieNode node, StringBuilder path, List<String> out) {
+    // DFS to collect all words under a given node
+    private void dfs(TrieNode node, StringBuilder path, List<String> out) {
         if (node.isWord) {
             out.add(path.toString());
         }
         for (var e : node.children.entrySet()) {
             path.append(e.getKey());
-            dfsExact(e.getValue(), path, out);
+            dfs(e.getValue(), path, out);
             path.deleteCharAt(path.length() - 1);
         }
     }
 
     /**
-     * Perform a fuzzySearch with maxDistance=0 to retrieve exact matches.
+     * Fuzzy-search with maxDistance=0 to get exact matches only.
      */
     public List<Suggestion> fuzzySearch(String prefix, int maxDistance) {
         if (prefix == null || maxDistance != 0) {
             return Collections.emptyList();
         }
-        TrieNode node = root;
+        TrieNode cur = root;
         for (char c : prefix.toLowerCase().toCharArray()) {
-            node = node.children.get(c);
-            if (node == null) {
+            cur = cur.children.get(c);
+            if (cur == null) {
                 return Collections.emptyList();
             }
         }
         List<String> words = new ArrayList<>();
-        dfsExact(node, new StringBuilder(prefix.toLowerCase()), words);
-        List<Suggestion> out = new ArrayList<>();
+        dfs(cur, new StringBuilder(prefix.toLowerCase()), words);
+        List<Suggestion> out = new ArrayList<>(words.size());
         for (String w : words) {
             out.add(new Suggestion(w, 0));
         }
@@ -194,15 +169,15 @@ class TrieWithFuzzySearch {
 }
 
 /**
- * SpellChecker integrates a Trie (for exact-only mode) and a BK-Tree
- * (for fuzzy-only mode) to implement spellCheck().
+ * Main SpellChecker: combines Trie (exact) + BKTree (fuzzy).
+ * Implements a 2‑phase sort: by edit distance, then by “root substring” match.
  */
 public class SpellChecker {
     private final TrieWithFuzzySearch trie = new TrieWithFuzzySearch();
-    private final BKTree            bk   = new BKTree();
+    private final BKTree             bk   = new BKTree();
 
     /**
-     * Load a collection of words into both the Trie and the BK-Tree.
+     * Bulk-insert a collection of words into both Trie and BK‑Tree.
      */
     public void insertWords(Collection<String> words) {
         if (words == null) return;
@@ -213,21 +188,13 @@ public class SpellChecker {
     }
 
     /**
-     * Build or extend dictionary from a List.
-     */
-    public void buildDictionary(List<String> dict) {
-        insertWords(dict);
-    }
-
-    /**
-     * Perform spell-check:
-     *  - If maxDistance==0: only exact matches via Trie
-     *  - Else: fuzzy matches via BK-Tree, sorted and truncated
-     *
-     * @param word           the input (possibly misspelled)
-     * @param maxDistance    maximum edit distance allowed
-     * @param maxSuggestions maximum number of suggestions
-     * @return list of suggestions (possibly empty)
+     * Spell-check a word:
+     * 1) If maxDistance==0, do exact-only via Trie.
+     * 2) Else, get all BK‑Tree matches ≤maxDistance.
+     * 3) Sort by edit distance ascending.
+     * 4) Promote candidates containing the typo’s “root” substring:
+     *    root = word without its last character.
+     * 5) Truncate to maxSuggestions.
      */
     public List<String> check(String word, int maxDistance, int maxSuggestions) {
         if (word == null) {
@@ -235,7 +202,7 @@ public class SpellChecker {
         }
         String q = word.toLowerCase();
 
-        // exact‐only mode
+        // exact-only mode
         if (maxDistance == 0) {
             for (var s : trie.fuzzySearch(q, 0)) {
                 if (s.word.equals(q)) {
@@ -245,14 +212,32 @@ public class SpellChecker {
             return Collections.emptyList();
         }
 
-        // fuzzy mode via BK-Tree
+        // fuzzy via BK‑Tree
         List<String> candidates = bk.search(q, maxDistance);
         if (candidates.isEmpty()) {
             return Collections.emptyList();
         }
 
-        // sort by actual edit distance, then truncate
+        // 1) sort by edit distance
         candidates.sort(Comparator.comparingInt(w -> EditDistance.compute(q, w)));
-        return candidates.subList(0, Math.min(maxSuggestions, candidates.size()));
+
+        // 2) define root substring (all but last char)
+        String root = q.length() > 1 ? q.substring(0, q.length() - 1) : q;
+
+        // 3) bucketize
+        List<String> bucket1 = new ArrayList<>();
+        List<String> bucket2 = new ArrayList<>();
+        for (String cand : candidates) {
+            if (cand.contains(root)) {
+                bucket1.add(cand);
+            } else {
+                bucket2.add(cand);
+            }
+        }
+
+        // 4) merge & truncate
+        List<String> merged = new ArrayList<>(bucket1);
+        merged.addAll(bucket2);
+        return merged.subList(0, Math.min(maxSuggestions, merged.size()));
     }
 }
