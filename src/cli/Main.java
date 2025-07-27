@@ -70,10 +70,10 @@ public class Main {
 
 		SubscriptionPlan subscriptionPlan = SubscriptionPlanScreen.show();
 		request.setSubscriptionPlan(subscriptionPlan);
+		BudgetRange[] allowedBudgets = BudgetRange.getBySubscriptionPlan(subscriptionPlan);
 		ConsolePrinter.printInfo("Selected Subscription Plan: " + subscriptionPlan.getDescription() + "\n");
 
-		BudgetRange[] allowedBudgets = BudgetRange.getBySubscriptionPlan(subscriptionPlan);
-		BudgetRange selectedBudget = BudgetSelectionScreen.show(allowedBudgets);
+		BudgetRange selectedBudget = BudgetSelectionScreen.show(subscriptionPlan, allowedBudgets);
 		request.setBudgetRange(selectedBudget);
 		ConsolePrinter.printInfo("Selected Budget: " + selectedBudget.getDescription() + "\n");
 
