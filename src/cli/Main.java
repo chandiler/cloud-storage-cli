@@ -31,11 +31,12 @@ public class Main {
 		// List<Plan> plans = new HtmlParser().parse(rawHtml);
 		List<Plan> plans = List.of(); // Placeholder: Replace with actual data loading
 		ConsolePrinter.printSuccess("Data loaded.\n");
-
-		// Load words from crawled data
-		Set<String> words = Set.of("admin", "dropbox", "drive", "onedrive", "icloud", "storage", "encryption",
-				"version history");
-		completer.insertWords(words);
+		 FeatureExtractor extractor = new FeatureExtractor("data/cloud_storage.json");
+		 extractor.extractFeaturesFromJson();
+		 Set<String> featuresKeywords = extractor.singleWordFeatures;
+		completer.insertWords(featuresKeywords);
+		SpellChecker spellChecker = new SpellChecker();
+		spellChecker.insertWords(featuresKeywords);
 		InputReader.initAutoComplete(completer);
 
 		// Subscription Plan
@@ -74,8 +75,7 @@ public class Main {
 		request.setStorageRange(selectedStorage);
 		ConsolePrinter.printInfo("Selected Storage: " + selectedStorage.getDescription() + "\n");
 
-		SpellChecker spellChecker = new SpellChecker();
-		spellChecker.insertWords(words);
+	
 		FeatureInputScreen featureInputScreen = new FeatureInputScreen(spellChecker);
 		List<String> selectedFeatures = featureInputScreen.showAndGetResult();
 		ConsolePrinter.printInfo("Selected Storage: " + selectedStorage.getDescription() + "\n");
