@@ -1,0 +1,87 @@
+[
+  {
+    "Platform": "Box",
+    "PaymentFrequency": [
+      "Monthly",
+      "Annual"
+    ],
+    "AvailableStorageOptions": [
+      "10 GB",
+      "100 GB"
+    ],
+    "UpgradePaths": "Supports upgrading online via Box account",
+    "FileTypesSupported": [
+      "Documents",
+      "Photos",
+      "Videos",
+      "Audio"
+    ],
+    "Notes": "Free plan has limited integrations; paid plans include Microsoft 365 and G Suite support",
+    "PlatformCompatibility": {
+      "Integrations": []
+    },
+    "Plans": [
+      {
+        "PlanName": "Individual",
+        "Storage": "10 GB",
+        "Features": [
+          "10 GB of storage",
+          "250 MB file upload limit",
+          "1 file version",
+          "Box Sign: 5 docs for e-sign per month"
+        ],
+        "PricingOptions": [
+          {
+            "PlanType": "Annual",
+            "Price": "0"
+          },
+          {
+            "PlanType": "Monthly",
+            "Price": "0"
+          }
+        ]
+      },
+      {
+        "PlanName": "Personal Pro",
+        "Storage": "100 GB",
+        "Features": [
+          "100 GB of storage",
+          "5 GB file upload",
+          "10 file versions",
+          "Box Sign: 15 docs for e-sign per month; Unlimited templates"
+        ],
+        "PricingOptions": [
+          {
+            "PlanType": "Annual",
+            "Price": "168"
+          },
+          {
+            "PlanType": "Monthly",
+            "Price": "19"
+          }
+        ]
+      },
+      {
+        "PlanName": "Business Starter",
+        "Storage": "100 GB",
+        "Features": [
+          "100 GB of storage",
+          "2 GB file upload",
+          "25 file versions",
+          "Box Sign: 10 docs for e-sign per user per month; Unlimited templates",
+          "Technical Support during local business hours"
+        ],
+        "PricingOptions": [
+          {
+            "PlanType": "Annual",
+            "Price": "84"
+          },
+          {
+            "PlanType": "Monthly",
+            "Price": "9"
+          }
+        ]
+      }
+    ]
+  }
+]
