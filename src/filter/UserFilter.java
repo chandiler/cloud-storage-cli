@@ -170,131 +170,131 @@ import types.CloudStoragePlatform;
 import types.StorageRange;
 import types.SubscriptionPlan;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class UserFilter {
 
-	public static List<Plan> filter(List<Plan> plans, UserRequest request) {
-	    List<ScorePlan> scored = new ArrayList<>();
+    public static List<Plan> filter(List<Plan> plans, UserRequest request) {
+        List<ScorePlan> scored = new ArrayList<>();
 
-	    BudgetRange budgetRange = request.getBudgetRange();
-	    StorageRange storageRange = request.getStorageRange();
-	    SubscriptionPlan subscriptionPlan = request.getSubscriptionPlan();
-	    CloudStoragePlatform selectedPlatform = request.getPlatform();
-	    List<String> userFeatures = request.getFeatureKeywords();
+        BudgetRange budgetRange = request.getBudgetRange();
+        StorageRange storageRange = request.getStorageRange();
+        SubscriptionPlan subscriptionPlan = request.getSubscriptionPlan();
+        CloudStoragePlatform selectedPlatform = request.getPlatform();
+        List<String> userFeatures = request.getFeatureKeywords();
 
-	    for (Plan plan : plans) {
-	        // Platform filter
-	        if (selectedPlatform != null) {
-	            if (plan.getPlatform() == null || !plan.getPlatform().equalsIgnoreCase(selectedPlatform.name())) {
-	                continue;
-	            }
-	        }
+        for (Plan plan : plans) {
+            String planName = plan.getPlanName();
+            boolean platformOk = true;
 
-	        boolean priceOk = false;
-	        boolean planTypeOk = (subscriptionPlan == null);
-	        boolean storageOk = true;
+            // ✅ Platform filter: skip if selectedPlatform == ALL
+            if (selectedPlatform != null && selectedPlatform != CloudStoragePlatform.ALL) {
+                platformOk = (plan.getPlatform() != null && plan.getPlatform().equalsIgnoreCase(selectedPlatform.name()));
+            }
 
-	        // Storage check
-	        if (storageRange != null && plan.getStorage() != null) {
-	            int planStorage = parseStorageToGB(plan.getStorage());
-	            int minStorage = getStorageMin(storageRange);
-	            int maxStorage = storageRange.ordinal() == StorageRange.values().length - 1
-	                    ? Integer.MAX_VALUE
-	                    : storageRange.getMaxGB();
+            boolean priceOk = false;
+            boolean planTypeOk = false;
+            boolean storageOk = true;
 
-	            if (planStorage < minStorage || planStorage > maxStorage) {
-	                storageOk = false;
-	            }
-	        }
+            // Storage check
+            int planStorage = -1;
+            if (storageRange != null && plan.getStorage() != null) {
+                planStorage = parseStorageToGB(plan.getStorage());
+                int minStorage = getStorageMin(storageRange);
+                int maxStorage = (storageRange.ordinal() == StorageRange.values().length - 1)
+                        ? Integer.MAX_VALUE
+                        : storageRange.getMaxGB();
 
-	        // Price and plan type check
-	        List<PricingOption> pricingOptions = plan.getPricingOptions();
-	        if (pricingOptions != null) {
-	            for (PricingOption option : pricingOptions) {
-	                String planTypeStr = option.getPlanType() != null ? option.getPlanType().toLowerCase() : "";
-	                String expectedPlanType = subscriptionPlan != null ? subscriptionPlan.name().toLowerCase() : "";
+                storageOk = (planStorage >= minStorage && planStorage <= maxStorage);
+            }
 
-	                if (subscriptionPlan == null || planTypeStr.contains(expectedPlanType)) {
-	                    planTypeOk = true;
+            // Price and plan type check
+            List<PricingOption> pricingOptions = plan.getPricingOptions();
+            if (pricingOptions != null) {
+                for (PricingOption option : pricingOptions) {
+                    if (option.getPrice() == null || option.getPlanType() == null) continue;
 
-	                    String rawPrice = option.getPrice();
-	                    if (rawPrice == null) continue;
+                    String planTypeStr = option.getPlanType().trim().toUpperCase();
+                    String expectedType = subscriptionPlan.name().toUpperCase();
 
-	                    String priceStr = rawPrice.trim();
-	                    if (priceStr.equalsIgnoreCase("FREE")) {
-	                        priceOk = (budgetRange == BudgetRange.FREE);
-	                    } else {
-	                        try {
-	                            Matcher matcher = Pattern.compile("([\\d\\.]+)").matcher(priceStr);
-	                            if (matcher.find()) {
-	                                double priceValue = Double.parseDouble(matcher.group(1));
-	                                if (budgetRange == null ||
-	                                        (priceValue >= budgetRange.getMin() && priceValue <= budgetRange.getMax())) {
-	                                    priceOk = true;
-	                                }
-	                            }
-	                        } catch (Exception e) {
-	                            priceOk = false;
-	                        }
-	                    }
-	                }
-	            }
-	        }
+                    if (!planTypeStr.equals(expectedType)) continue;
+                    planTypeOk = true;
 
-	        if (priceOk && planTypeOk && storageOk) {
-	            int matchScore = 0;
-	            boolean featureMatched = true;
+                    String priceStr = option.getPrice().trim().toUpperCase();
 
-	            if (userFeatures != null && !userFeatures.isEmpty()) {
-	                featureMatched = false;
-	                if (plan.getFeatures() != null) {
-	                    for (String keyword : userFeatures) {
-	                        for (String feature : plan.getFeatures()) {
-	                            if (feature.toLowerCase().contains(keyword.toLowerCase())) {
-	                                matchScore++;
-	                                featureMatched = true;
-	                                break;
-	                            }
-	                        }
-	                        if (featureMatched) break;
-	                    }
-	                }
-	            }
+                    if (priceStr.contains("FREE")) {
+                        priceOk = (budgetRange.getMin() == 0 && budgetRange.getMax() == 0);
+                    } else {
+                        try {
+                            Matcher matcher = Pattern.compile("([\\d\\.]+)").matcher(priceStr);
+                            if (matcher.find()) {
+                                double price = Double.parseDouble(matcher.group(1));
+                                priceOk = (price >= budgetRange.getMin() && price <= budgetRange.getMax());
+                            }
+                        } catch (Exception e) {
+                            priceOk = false;
+                        }
+                    }
 
-	            if (featureMatched) {
-	                scored.add(new ScorePlan(plan, matchScore));
-	            }
-	        }
-	    }
+                    if (priceOk) break;
+                }
+            }
 
-	    Collections.sort(scored, Comparator.comparingInt(ScorePlan::getScore).reversed());
+            // Feature check
+            boolean featureMatched = true;
+            int matchScore = 0;
 
-	    List<Plan> results = new ArrayList<>();
-	    for (ScorePlan sp : scored) {
-	        results.add(sp.getPlan());
-	    }
+            if (userFeatures != null && !userFeatures.isEmpty()) {
+                featureMatched = false;
+                if (plan.getFeatures() != null) {
+                    for (String keyword : userFeatures) {
+                        for (String feature : plan.getFeatures()) {
+                            if (feature.toLowerCase().contains(keyword.toLowerCase())) {
+                                matchScore++;
+                                featureMatched = true;
+                                break;
+                            }
+                        }
+                        if (featureMatched) break;
+                    }
+                }
+            }
 
-	    return results;
-	}
-	
-	private static int getStorageMin(StorageRange range) {
-	    if (range == StorageRange.RANGE_0_5) return 0;
+            // ✅ Print all match conditions for debug
+            System.out.printf(
+                "[DEBUG] Plan: %-30s | Platform: %-5s | Storage: %-5s | Type: %-5s | Price: %-5s | Feature: %-5s%n",
+                planName, platformOk, storageOk, planTypeOk, priceOk, featureMatched
+            );
 
-	    StorageRange[] all = StorageRange.values();
-	    for (int i = 1; i < all.length; i++) {
-	        if (all[i] == range) {
-	            return all[i - 1].getMaxGB() + 1;
-	        }
-	    }
+            if (platformOk && priceOk && planTypeOk && storageOk && (userFeatures == null || userFeatures.isEmpty() || featureMatched)) {
+                scored.add(new ScorePlan(plan, matchScore));
+            }
+        }
 
-	    return 0; // fallback
-	}
+        scored.sort(Comparator.comparingInt(ScorePlan::getScore).reversed());
+
+        List<Plan> results = new ArrayList<>();
+        for (ScorePlan sp : scored) {
+            results.add(sp.getPlan());
+        }
+
+        return results;
+    }
+
+    private static int getStorageMin(StorageRange range) {
+        if (range == StorageRange.RANGE_0_5) return 0;
+
+        StorageRange[] all = StorageRange.values();
+        for (int i = 1; i < all.length; i++) {
+            if (all[i] == range) {
+                return all[i - 1].getMaxGB() + 1;
+            }
+        }
+
+        return 0;
+    }
 
     public static UserRequest collect() {
         return new UserRequest();
