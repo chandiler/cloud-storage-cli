@@ -51,13 +51,17 @@ public class WordCompleter {
          * @param word the word to insert
          */
         public void insert(String word) {
+            if (word == null) {
+                throw new IllegalArgumentException("Word to insert cannot be null.");
+            }
+            if (word.trim().isEmpty()) {
+                throw new IllegalArgumentException("Word to insert cannot be empty.");
+            }
+
             TrieNode current = root;
-            // Traverse each character of the word
             for (char ch : word.toCharArray()) {
-                // Create a child node if it doesn't exist
                 current = current.children.computeIfAbsent(ch, c -> new TrieNode());
             }
-            // Mark the last node as the end of a word
             current.isEndOfWord = true;
         }
 
@@ -68,19 +72,20 @@ public class WordCompleter {
          * @return a list of words that start with the given prefix
          */
         public List<String> getWordsWithPrefix(String prefix) {
+            if (prefix == null) {
+                throw new IllegalArgumentException("Prefix cannot be null.");
+            }
+
             List<String> results = new ArrayList<>();
             TrieNode current = root;
 
-            // Navigate to the node representing the last character of the prefix
             for (char ch : prefix.toCharArray()) {
                 if (!current.children.containsKey(ch)) {
-                    // If the prefix does not exist, return an empty list
-                    return results;
+                    return results; // prefix not found
                 }
                 current = current.children.get(ch);
             }
 
-            // Collect all words that extend this prefix
             findAllWords(current, prefix, results);
             return results;
         }
@@ -157,17 +162,8 @@ public class WordCompleter {
         
     }
 
-    /**
-     * Example main method for testing purposes.
-     */
+  
     public static void main(String[] args) {
-        WordCompleter completer = new WordCompleter();
-        completer.insertWords(Set.of("cat", "car", "carbon", "dog", "door"));
-
-        System.out.println("All words in Trie:");
-        completer.printAllWords();
-
-        System.out.println("\nWords starting with 'ca':");
-        completer.complete("ca").forEach(System.out::println);
+      
     }
 }
