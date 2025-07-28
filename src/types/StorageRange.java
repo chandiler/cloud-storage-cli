@@ -40,8 +40,38 @@ public enum StorageRange {
     /**
      * Optional: Filter StorageRanges based on BudgetRange if needed.
      */
-    public static StorageRange[] getByBudget(BudgetRange budget) {
+    /*public static StorageRange[] getByBudget(BudgetRange budget) {
       
         return values();
+    }*/
+    
+    public static StorageRange[] getByBudget(BudgetRange budget) {
+        return switch (budget) {
+            // MONTHLY cases
+            case FREE_MONTHLY, FREE_ANNUAL -> new StorageRange[]{
+                    RANGE_0_5
+            };
+
+            case RANGE_1_5_MONTHLY, RANGE_1_60_ANNUAL,
+                 RANGE_6_10_MONTHLY, RANGE_61_120_ANNUAL -> new StorageRange[]{
+                    RANGE_0_5, RANGE_6_100
+            };
+
+            case RANGE_11_20_MONTHLY, RANGE_121_180_ANNUAL -> new StorageRange[]{
+                    RANGE_6_100, RANGE_101_999, RANGE_1_2_TB
+            };
+
+            case RANGE_21_30_MONTHLY, RANGE_181_300_ANNUAL -> new StorageRange[]{
+                    RANGE_1_2_TB, RANGE_3_5_TB
+            };
+
+            case RANGE_31_50_MONTHLY, RANGE_301_500_ANNUAL -> new StorageRange[]{
+                    RANGE_1_2_TB, RANGE_3_5_TB, RANGE_6_10_TB
+            };
+
+            case RANGE_51_PLUS_MONTHLY, RANGE_501_PLUS_ANNUAL -> new StorageRange[]{
+                    RANGE_1_2_TB, RANGE_3_5_TB, RANGE_6_10_TB, UNLIMITED
+            };
+        };
     }
 }
