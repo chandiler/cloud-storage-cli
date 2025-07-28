@@ -25,13 +25,7 @@ public class InputReader {
             reader = LineReaderBuilder.builder()
                     .terminal(terminal)
                     .completer(adapter)
-                    .option(LineReader.Option.DISABLE_EVENT_EXPANSION, true) 
-                    .variable(LineReader.LIST_MAX, 13) 
                     .build();
-            
-            reader.setVariable(LineReader.BLINK_MATCHING_PAREN, 0);
-            reader.unsetOpt(LineReader.Option.AUTO_LIST);
-            reader.unsetOpt(LineReader.Option.AUTO_MENU);
         } catch (IOException e) {
             ConsolePrinter.printError("Error initializing autocomplete. Falling back to basic input.");
             reader = null;
