@@ -178,6 +178,7 @@ public class UserFilter {
 
     public static List<Plan> filter(List<Plan> plans, UserRequest request) {
         List<ScorePlan> scored = new ArrayList<>();
+        Map<String, Integer> featureFrequency = new HashMap<>();
 
         BudgetRange budgetRange = request.getBudgetRange();
         StorageRange storageRange = request.getStorageRange();
@@ -185,11 +186,22 @@ public class UserFilter {
         CloudStoragePlatform selectedPlatform = request.getPlatform();
         List<String> userFeatures = request.getFeatureKeywords();
 
+        // Step 1: Build frequency map of all features in all plans
+        for (Plan plan : plans) {
+            if (plan.getFeatures() != null) {
+                for (String feature : plan.getFeatures()) {
+                    featureFrequency.put(
+                        feature.toLowerCase(),
+                        featureFrequency.getOrDefault(feature.toLowerCase(), 0) + 1
+                    );
+                }
+            }
+        }
+
         for (Plan plan : plans) {
             String planName = plan.getPlanName();
             boolean platformOk = true;
 
-            // ✅ Platform filter: skip if selectedPlatform == ALL
             if (selectedPlatform != null && selectedPlatform != CloudStoragePlatform.ALL) {
                 platformOk = (plan.getPlatform() != null && plan.getPlatform().equalsIgnoreCase(selectedPlatform.name()));
             }
@@ -198,7 +210,6 @@ public class UserFilter {
             boolean planTypeOk = false;
             boolean storageOk = true;
 
-            // Storage check
             int planStorage = -1;
             if (storageRange != null && plan.getStorage() != null) {
                 planStorage = parseStorageToGB(plan.getStorage());
@@ -210,7 +221,6 @@ public class UserFilter {
                 storageOk = (planStorage >= minStorage && planStorage <= maxStorage);
             }
 
-            // Price and plan type check
             List<PricingOption> pricingOptions = plan.getPricingOptions();
             if (pricingOptions != null) {
                 for (PricingOption option : pricingOptions) {
@@ -242,7 +252,6 @@ public class UserFilter {
                 }
             }
 
-            // Feature check
             boolean featureMatched = true;
             int matchScore = 0;
 
@@ -252,21 +261,13 @@ public class UserFilter {
                     for (String keyword : userFeatures) {
                         for (String feature : plan.getFeatures()) {
                             if (feature.toLowerCase().contains(keyword.toLowerCase())) {
-                                matchScore++;
+                                matchScore += featureFrequency.getOrDefault(feature.toLowerCase(), 0);
                                 featureMatched = true;
-                                break;
                             }
                         }
-                        if (featureMatched) break;
                     }
                 }
             }
-
-            // ✅ Print all match conditions for debug
-            System.out.printf(
-                "[DEBUG] Plan: %-30s | Platform: %-5s | Storage: %-5s | Type: %-5s | Price: %-5s | Feature: %-5s%n",
-                planName, platformOk, storageOk, planTypeOk, priceOk, featureMatched
-            );
 
             if (platformOk && priceOk && planTypeOk && storageOk && (userFeatures == null || userFeatures.isEmpty() || featureMatched)) {
                 scored.add(new ScorePlan(plan, matchScore));

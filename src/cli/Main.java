@@ -6,6 +6,7 @@ import java.util.Set;
 import cli.screens.*;
 import cli.ui.ConsolePrinter;
 import cli.utils.InputReader;
+import cli.utils.JsonReader;
 import feature.*;
 import filter.UserFilter;
 import model.Plan;
@@ -14,12 +15,11 @@ import types.BudgetRange;
 import types.CloudStoragePlatform;
 import types.StorageRange;
 import types.SubscriptionPlan;
-import java.util.concurrent.CompletableFuture;
 
 public class Main {
 
-	public static void main(String[] args) {
-		// Autocomplete
+    public static void main(String[] args) {
+        // Autocomplete
         WordCompleter completer = new WordCompleter();
 
         while (true) {
@@ -85,7 +85,7 @@ public class Main {
                 break;
             }
         }
-	}
+    }
 }
 
 	/* For testing without wordcompletor and spellchecking features
